@@ -160,7 +160,7 @@ func main() {
 	}
 
 	fmt.Println("Finished")
-	for k, _ := range dict {
+	for k := range dict {
 		fmt.Printf("coord: %d, %d\n", k.x, k.y)
 	}
 	fmt.Println(len(dict))
