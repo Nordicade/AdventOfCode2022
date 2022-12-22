@@ -78,7 +78,7 @@ int applyOperation(int currWorry, string operation) {
 
 int main(){
     ifstream file;
-    file.open("test.txt");
+    file.open("monkeys.txt");
     if(!file.is_open()){
         cout<<"Unable to open the file."<<endl;
         return 0;
@@ -126,14 +126,18 @@ int main(){
     cout << "\n\n" << endl;
 
     // Begin the rounds
-    for (int rounds = 0; rounds < 1; rounds ++) {
+    for (int rounds = 0; rounds < 20; rounds ++) {
         for(int monki = 0; monki < monkeys.size(); monki++){
-            for(int item : monkeys[monki].startingItems){
-                worryLevel = item;
+            for(int item = 0; item < monkeys[monki].startingItems.size(); item++){
+                if (monkeys[monki].startingItems[item] == -1){
+                    continue;
+                }
+                worryLevel = monkeys[monki].startingItems[item];
                 cout << "WL : " << worryLevel << endl;
                 worryLevel = applyOperation(worryLevel, monkeys[monki].operation);
                 cout << "WL : " << worryLevel << endl;
-                worryLevel = worryLevel / 3;
+                // This division rule only applied in part one
+                // worryLevel = worryLevel / 3;
                 cout << "WL : " << worryLevel << endl;
 
                 cout << "Before throwing : " << endl;
@@ -143,8 +147,8 @@ int main(){
                 cout << "" << endl;
 
                 if(worryLevel % monkeys[monki].test == 0) {
-                    monkeys[monki].startingItems.erase(monkeys[monki].startingItems.begin());
-                    monkeys[monkeys[monki].ifT].startingItems.push_back(item);
+                    monkeys[monkeys[monki].ifT].startingItems.push_back(worryLevel);
+                    monkeys[monki].startingItems[item] = -1;
                     cout << "true" << endl;
                     cout << "thrown to " << monkeys[monki].ifT << endl;
                     cout << "After throwing : ";
@@ -153,8 +157,8 @@ int main(){
                     }
                     cout << "" << endl;
                 } else {
-                    monkeys[monki].startingItems.erase(monkeys[monki].startingItems.begin());
-                    monkeys[monkeys[monki].ifF].startingItems.push_back(item);
+                    monkeys[monkeys[monki].ifF].startingItems.push_back(worryLevel);
+                    monkeys[monki].startingItems[item] = -1;
                     cout << "false" << endl;
                     cout << "thrown to " << monkeys[monki].ifF << endl;
                     cout << "After throwing : ";
@@ -166,15 +170,20 @@ int main(){
                 monkeys[monki].inspections = monkeys[monki].inspections + 1;
             }
         }
+        for(int monki = 0; monki < monkeys.size(); monki++){
+            for(int item = 0; item < monkeys[monki].startingItems.size(); item++){
+                auto it = remove_if(monkeys[monki].startingItems.begin(), monkeys[monki].startingItems.end(),  [](const int i) {return i < 0; });
+                monkeys[monki].startingItems.erase(it, monkeys[monki].startingItems.end());
+            }
+        }
     }
 
     cout << " - - - - " << endl;
 
     // sanity check
-    for(int monki = 0; monki < monkeys.size(); monki++){
-        printMonkey(monkeys[monki]);
-    }
-    exit(0);
+    // for(int monki = 0; monki < monkeys.size(); monki++){
+    //     printMonkey(monkeys[monki]);
+    // }
 
     // determine the top two inspectors
     vector<int> monkeyInspects;
