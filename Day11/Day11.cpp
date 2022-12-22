@@ -10,12 +10,12 @@
 using namespace std;
 
 struct Monkey {
-    vector<int> startingItems;
+    vector<long long> startingItems;
     string operation;
     int test;
     int ifT;
     int ifF;
-    int inspections;
+    long long inspections;
     Monkey() : operation(""), test(0), ifT(0), ifF(0), inspections(0) {} 
 };
 
@@ -47,21 +47,20 @@ void printMonkey(Monkey monkey) {
     cout << monkey.ifF << endl;
 }
 
-int applyOperation(int currWorry, string operation) {
+long long applyOperation(long long currWorry, string operation) {
     vector<string> chunks = split(operation, ' ');
-    int LHS = 0;
-    int RHS = 0;
+    long long LHS = 0;
+    long long RHS = 0;
     if (chunks.size() == 3) {
         if(chunks[0] == "old") {
-            // cout << currWorry << endl;
             LHS = currWorry;
         } else {
-            LHS = stoi(chunks[0]);
+            LHS = static_cast<long long>(stoi(chunks[0]));
         }
         if(chunks[2] == "old") {
             RHS = currWorry;
         } else {
-            RHS = stoi(chunks[2]);
+            RHS = static_cast<long long>(stoi(chunks[2]));
         }
         switch(chunks[1][0]){
             case '+':
@@ -81,14 +80,15 @@ int main(){
     file.open("monkeys.txt");
     if(!file.is_open()){
         cout<<"Unable to open the file."<<endl;
-        return 0;
+        return 1;
     }
     
     string line;
     vector<string> lines;
 
-    int worryLevel;
+    long long worryLevel;
     vector<Monkey> monkeys;
+    int product = 1;
 
     while(getline(file, line)){
         lines.push_back(line);
@@ -110,6 +110,7 @@ int main(){
         else if (lines[i].find("Test") != string::npos){
             vector<string> words = split(lines[i], ' ');
             monkeys.back().test = stoi(words.back());
+            product *= stoi(words.back());
         }
         else if (lines[i].find("If true") != string::npos){
             monkeys.back().ifT = stoi(lines[i].substr(lines[i].length() - 1, lines[i].length()));
@@ -123,62 +124,36 @@ int main(){
         }
     }
 
-    cout << "\n\n" << endl;
-
     // Begin the rounds
-    for (int rounds = 0; rounds < 20; rounds ++) {
+    for (int rounds = 0; rounds < 10000; rounds ++) {
         for(int monki = 0; monki < monkeys.size(); monki++){
             for(int item = 0; item < monkeys[monki].startingItems.size(); item++){
                 if (monkeys[monki].startingItems[item] == -1){
                     continue;
                 }
                 worryLevel = monkeys[monki].startingItems[item];
-                cout << "WL : " << worryLevel << endl;
                 worryLevel = applyOperation(worryLevel, monkeys[monki].operation);
-                cout << "WL : " << worryLevel << endl;
                 // This division rule only applied in part one
                 // worryLevel = worryLevel / 3;
-                cout << "WL : " << worryLevel << endl;
-
-                cout << "Before throwing : " << endl;
-                for(int debug = 0; debug < monkeys[monki].startingItems.size(); debug++){
-                    cout << monkeys[monki].startingItems[debug] << ", ";
-                }
-                cout << "" << endl;
-
+                // This modification rule only applies to part two
+                worryLevel = worryLevel % product;
                 if(worryLevel % monkeys[monki].test == 0) {
                     monkeys[monkeys[monki].ifT].startingItems.push_back(worryLevel);
                     monkeys[monki].startingItems[item] = -1;
-                    cout << "true" << endl;
-                    cout << "thrown to " << monkeys[monki].ifT << endl;
-                    cout << "After throwing : ";
-                    for(int debug = 0; debug < monkeys[monki].startingItems.size(); debug++){
-                        cout << monkeys[monki].startingItems[debug]  << ", ";
-                    }
-                    cout << "" << endl;
                 } else {
                     monkeys[monkeys[monki].ifF].startingItems.push_back(worryLevel);
                     monkeys[monki].startingItems[item] = -1;
-                    cout << "false" << endl;
-                    cout << "thrown to " << monkeys[monki].ifF << endl;
-                    cout << "After throwing : ";
-                    for(int debug = 0; debug < monkeys[monki].startingItems.size(); debug++){
-                        cout << monkeys[monki].startingItems[debug] << ", ";
-                    }
-                    cout << "" << endl;
                 }
                 monkeys[monki].inspections = monkeys[monki].inspections + 1;
             }
         }
         for(int monki = 0; monki < monkeys.size(); monki++){
             for(int item = 0; item < monkeys[monki].startingItems.size(); item++){
-                auto it = remove_if(monkeys[monki].startingItems.begin(), monkeys[monki].startingItems.end(),  [](const int i) {return i < 0; });
+                auto it = remove_if(monkeys[monki].startingItems.begin(), monkeys[monki].startingItems.end(),  [](const int i) {return i == -1; });
                 monkeys[monki].startingItems.erase(it, monkeys[monki].startingItems.end());
             }
         }
     }
-
-    cout << " - - - - " << endl;
 
     // sanity check
     // for(int monki = 0; monki < monkeys.size(); monki++){
@@ -186,13 +161,15 @@ int main(){
     // }
 
     // determine the top two inspectors
-    vector<int> monkeyInspects;
+    vector<long long> monkeyInspects;
     for(int monki = 0; monki < monkeys.size(); monki++){
         monkeyInspects.push_back(monkeys[monki].inspections);
     }
-    sort(monkeyInspects.begin(), monkeyInspects.end(), greater<int>());
-    int output = monkeyInspects[0] * monkeyInspects[1];
+    sort(monkeyInspects.begin(), monkeyInspects.end(), greater<long long>());
+    long long output = monkeyInspects[0] * monkeyInspects[1];
     cout << "Final answer : " << output << endl;
+    cout << monkeyInspects[0] << endl;
+    cout << monkeyInspects[1] << endl;
     file.close();
     return 0;
 }
